@@ -26,7 +26,7 @@ interface SensorData {
 }
 
 // ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
-const FORCE_MOCK_MODE = false;
+const FORCE_MOCK_MODE = true;
 
 // Serial port configuration (adjust for your system)
 const PORT_NAME = FORCE_MOCK_MODE ? "MOCK" : process.env.SERIAL_PORT || "COM5";
@@ -39,7 +39,7 @@ if (PORT_NAME === "MOCK") {
   setInterval(() => {
     const mockData: SensorData = {
       sensorId: Math.random() > 0.5 ? "A" : "B",
-      distance: Math.floor(Math.random() * 300),
+      distance: Math.floor(Math.random() * 55),
       timestamp: Date.now(),
       isFull: Math.random() > 0.7,
       receivedAt: Date.now(),

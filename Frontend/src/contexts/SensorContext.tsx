@@ -241,9 +241,9 @@ export const SensorProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Convert distance to fill level (0-300cm becomes 0-100%)
   const distanceToFillLevel = (distance: number): number => {
-    const maxDistance = 300; // Maximum distance Arduino can measure
+    const maxDistance = 55; // Maximum distance Arduino can measure
     // If distance is 0cm, bin is 100% full
-    // If distance is 300cm, bin is 0% full
+    // If distance is 55cm, bin is 0% full
     const fillLevel = Math.max(
       0,
       100 - Math.round((distance / maxDistance) * 100)
