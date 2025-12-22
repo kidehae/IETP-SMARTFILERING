@@ -1,0 +1,747 @@
+/* components.css - Sidebar (White + Soft Blue) */
+
+:root {
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e5e7eb;
+
+  --sidebar-text: #475569;
+  --sidebar-text-light: #94a3b8;
+
+  --sidebar-hover: #f8fafc;
+
+  --sidebar-active: #3b82f6; /* soft blue */
+  --sidebar-active-bg: #eff6ff;
+
+  --sidebar-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --transition: all 0.25s ease;
+}
+
+/* Sidebar Container */
+.sidebar {
+  height: 100vh;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: var(--sidebar-shadow);
+  display: flex;
+  flex-direction: column;
+  width: 256px;
+  min-width: 256px;
+}
+
+.sidebar-collapsed {
+  width: 80px;
+  min-width: 80px;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  margin: 0;
+}
+
+.sidebar-welcome {
+  font-size: 13px;
+  color: var(--sidebar-text-light);
+}
+
+.username {
+  color: var(--sidebar-active);
+  font-weight: 600;
+}
+
+/* Logo */
+.collapsed-logo {
+  width: 40px;
+  height: 40px;
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Menu Items */
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--sidebar-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sidebar-menu-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.sidebar-menu-item-active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
+}
+
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--sidebar-text-light);
+}
+
+.sidebar-menu-item-active .menu-icon {
+  color: var(--sidebar-active);
+}
+
+.menu-item-label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+/* Active indicator */
+.active-indicator {
+  position: absolute;
+  right: 8px;
+  width: 3px;
+  height: 18px;
+  background: var(--sidebar-active);
+  border-radius: 2px;
+}
+
+/* Footer */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #ef4444;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.logout-button:hover {
+  background: #fef2f2;
+}
+
+/* Collapsed State */
+.sidebar-collapsed .menu-item-label,
+.sidebar-collapsed .logout-text {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-menu-item,
+.sidebar-collapsed .logout-button {
+  justify-content: center;
+  padding: 12px;
+}
+
+/* Scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--sidebar-border);
+  border-radius: 2px;
+}
+
+/* Focus */
+.sidebar-menu-item:focus-visible,
+.logout-button:focus-visible {
+  outline: 2px solid var(--sidebar-active);
+  outline-offset: 2px;
+}
+
+
+/* =========================
+   Header Styles
+========================= */
+
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Icon buttons */
+.icon-button {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.icon-button:hover {
+  background: #f3f4f6;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #4b5563;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+
+/* Language button */
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.language-button:hover {
+  background: #1d4ed8;
+}
+
+.icon-small {
+  width: 16px;
+  height: 16px;
+}
+
+/* User section */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 16px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: #dbeafe;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar .icon {
+  color: #2563eb;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+
+/* Location Map Styles */
+
+.location-map-container {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  position: relative;
+  overflow: visible;
+}
+
+.location-map-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.connection-status {
+  margin-bottom: 1rem;
+}
+
+.connection-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.connection-indicator.connected {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.connection-indicator.disconnected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.connection-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.connection-indicator.connected .connection-dot {
+  background-color: #10b981;
+}
+
+.connection-indicator.disconnected .connection-dot {
+  background-color: #ef4444;
+}
+
+.location-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: visible;
+}
+
+.map-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  border-radius: 0.5rem;
+  border: 2px solid #bfdbfe;
+  overflow: hidden;
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.grid-line-horizontal {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: #3b82f6;
+}
+
+.grid-line-vertical {
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background-color: #3b82f6;
+}
+
+.map-title-overlay {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.city-name {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+  margin: 0;
+}
+
+.city-subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+  z-index: 10;
+  max-width: 180px;
+}
+
+.legend-title {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-text {
+  font-size: 0.75rem;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* Map Markers */
+.map-marker-container {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.map-marker-container:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  z-index: 10000;
+}
+
+.map-marker {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  transition: all 0.2s;
+}
+
+.map-marker:hover {
+  transform: scale(1.2);
+}
+
+.status-critical {
+  background-color: #ef4444;
+}
+
+.status-warning {
+  background-color: #f59e0b;
+}
+
+.status-safe {
+  background-color: #10b981;
+}
+
+.arduino-marker {
+  border-style: double;
+  border-width: 4px;
+}
+
+.marker-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  opacity: 0.75;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.arduino-indicator {
+  position: absolute;
+  top: -0.375rem;
+  right: -0.375rem;
+  background-color: #7c3aed;
+  color: white;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+}
+
+.arduino-text {
+  font-size: 0.5rem;
+  font-weight: bold;
+}
+
+/* Map Tooltip */
+.map-tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  pointer-events: none;
+  min-width: 280px;
+  z-index: 9999;
+}
+
+.map-marker-container:hover .map-tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.tooltip-content {
+  background-color: #1f2937;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 2px solid white;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tooltip-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bin-id {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.bin-type-indicator {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.arduino-label {
+  background-color: #7c3aed;
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.static-label {
+  background-color: #6b7280;
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.fill-level-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tooltip-subcity {
+  font-size: 0.875rem;
+  color: #d1d5db;
+  margin: 0 0 0.25rem 0;
+}
+
+.tooltip-location {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0 0 0.75rem 0;
+}
+
+.tooltip-details {
+  margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #374151;
+}
+
+.tooltip-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #d1d5db;
+  margin: 0 0 0.5rem 0;
+}
+
+.clock-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.tooltip-status {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+}
+
+.status-text {
+  font-weight: 500;
+}
+
+.tooltip-footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid #374151;
+}
+
+.view-on-maps-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: none;
+  border: none;
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.view-on-maps-btn:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+.maps-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .location-map-container {
+    padding: 1rem;
+  }
+  
+  .location-map-wrapper {
+    height: 400px;
+  }
+  
+  .map-legend {
+    max-width: 150px;
+    padding: 0.5rem;
+    bottom: 0.5rem;
+    right: 0.5rem;
+  }
+  
+  .map-title-overlay {
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .tooltip-content {
+    min-width: 240px;
+    padding: 0.75rem;
+  }
+}

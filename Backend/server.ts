@@ -1,184 +1,4 @@
-// // npx ts-node server.ts
-// import express, { Request, Response } from "express";
-// import http from "http";
-// import { Server } from "socket.io";
-// import { SerialPort, ReadlineParser } from "serialport";
-// import cors from "cors";
-// import TelegramBot from "node-telegram-bot-api";
-
-// const app = express();
-// const server = http.createServer(app);
-// const io = new Server(server, {
-//   cors: {
-//     origin: "http://localhost:3000", // Your React dev server
-//     methods: ["GET", "POST"],
-//   },
-// });
-
-// app.use(cors());
-
-// // Interface for sensor data
-// interface SensorData {
-//   sensorId: string;
-//   distance: number;
-//   timestamp: number;
-//   isFull: boolean;
-//   receivedAt: number;
-// }
-
-// const TELEGRAM_TOKEN = "8082516160:AAEk4d_Q-BJLLrvb5I0xBNrRDPfAfuSzV3Q"; // from BotFather
-// const CHAT_ID = "1167952257";
-
-// const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
-// bot
-//   .sendMessage(CHAT_ID, "✅ Test message from Node server!")
-//   .then(() => console.log("Test message sent successfully"))
-//   .catch((err) => console.error("Telegram error:", err));
-
-// function notifyBinFull(sensorId: string, distance: number) {
-//   const message = `🚨 Bin ${sensorId} is FULL!\nDistance: ${distance}cm\nPlease clean the bin.`;
-//   bot.sendMessage(CHAT_ID, message);
-// }
-
-// // ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
-// const FORCE_MOCK_MODE = true;
-
-// // Serial port configuration (adjust for your system)
-// const PORT_NAME = FORCE_MOCK_MODE ? "MOCK" : process.env.SERIAL_PORT || "COM5";
-
-// if (PORT_NAME === "MOCK") {
-//   console.log("🎭 Running in MOCK DATA mode (FORCE_MOCK_MODE = true)");
-//   console.log("To use real Arduino, change FORCE_MOCK_MODE to false");
-
-//   // Demo mode: Send mock data every 3 seconds
-//   setInterval(() => {
-//     const mockData: SensorData = {
-//       sensorId: Math.random() > 0.5 ? "A" : "B",
-//       distance: Math.floor(Math.random() * 300),
-//       timestamp: Date.now(),
-//       isFull: Math.random() > 0.7,
-//       receivedAt: Date.now(),
-//     };
-
-//     console.log(`🎭 Mock data: ${JSON.stringify(mockData)}`);
-//     io.emit("sensor-data", mockData);
-//     //mock
-//     if (mockData.isFull) {
-//       console.log(
-//         `⚠️ Bin ${mockData.sensorId} is full, sending Telegram alert`
-//       );
-//       notifyBinFull(mockData.sensorId, mockData.distance);
-//     }
-//   }, 3000);
-// } else {
-//   try {
-//     console.log(`🔌 Attempting to connect to serial port: ${PORT_NAME}`);
-//     const port = new SerialPort({
-//       path: PORT_NAME,
-//       baudRate: 9600,
-//     });
-
-//     const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
-
-//     parser.on("data", (data: string) => {
-//       console.log(`📥 Raw data: ${data}`);
-
-//       // Parse the data: Format is "A,distance,time" or "B,distance,time"
-//       const parts = data.trim().split(",");
-
-//       if (parts.length === 3) {
-//         const [sensorId, distanceStr, timeStr] = parts;
-//         const distance = parseInt(distanceStr);
-//         const timestamp = parseInt(timeStr);
-
-//         const sensorData: SensorData = {
-//           sensorId: sensorId,
-//           distance: distance,
-//           timestamp: timestamp,
-//           isFull: distance < 20, // Example: if distance < 20cm, bin is full
-//           receivedAt: Date.now(),
-//         };
-
-//         console.log(`✅ Parsed: ${JSON.stringify(sensorData)}`);
-
-//         // Send to all connected React clients
-//         io.emit("sensor-data", sensorData);
-//         /// Notify via Telegram if bin is full
-//         if (sensorData.isFull) {
-//           notifyBinFull(sensorData.sensorId, sensorData.distance);
-//         }
-//       }
-//     });
-
-//     port.on("error", (err: Error) => {
-//       console.error("❌ Serial port error:", err.message);
-//     });
-
-//     port.on("open", () => {
-//       console.log(`✅ Connected to serial port: ${PORT_NAME}`);
-//     });
-//   } catch (error: any) {
-//     console.error("❌ Failed to open serial port:", error.message);
-//     console.log("🔄 Switching to mock data mode...");
-
-//     // Fallback to mock data if serial fails
-//     setInterval(() => {
-//       const mockData: SensorData = {
-//         sensorId: Math.random() > 0.5 ? "A" : "B",
-//         distance: Math.floor(Math.random() * 300),
-//         timestamp: Date.now(),
-//         isFull: Math.random() > 0.7,
-//         receivedAt: Date.now(),
-//       };
-//       console.log(`🎭 Fallback mock data: ${JSON.stringify(mockData)}`);
-//       io.emit("sensor-data", mockData);
-
-//       if (mockData.isFull) {
-//         notifyBinFull(mockData.sensorId, mockData.distance);
-//       }
-//     }, 3000);
-//   }
-// }
-
-// // Socket.io connection handling
-// io.on("connection", (socket) => {
-//   console.log("🔗 React client connected:", socket.id);
-
-//   socket.on("disconnect", () => {
-//     console.log("❌ React client disconnected:", socket.id);
-//   });
-// });
-
-// // Health check endpoint
-// app.get("/health", (_req: Request, res: Response) => {
-//   res.json({
-//     status: "OK",
-//     message: "Sensor data server is running",
-//     mode: PORT_NAME === "MOCK" ? "mock" : "real",
-//     port: PORT_NAME === "MOCK" ? "none" : PORT_NAME,
-//   });
-// });
-
-// app.get("/", (_req: Request, res: Response) => {
-//   res.send("🚀 Sensor Data Backend Server is running!");
-// });
-// const PORT = process.env.PORT || 3001;
-// server.listen(PORT, () => {
-//   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-//   console.log(
-//     `📊 Mode: ${PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"}`
-//   );
-//   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-// });
-
-// // Handle graceful shutdown
-// process.on("SIGINT", () => {
-//   console.log("Shutting down server...");
-//   server.close(() => {
-//     console.log("Server closed");
-//     process.exit(0);
-//   });
-// });
+// npx ts-node server.ts
 
 import express, { Request, Response } from "express";
 import http from "http";
@@ -186,17 +6,43 @@ import { Server } from "socket.io";
 import { SerialPort, ReadlineParser } from "serialport";
 import cors from "cors";
 import TelegramBot from "node-telegram-bot-api";
+import { Pool, QueryResult } from "pg";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
+app.use(express.json()); 
+app.use(cors());
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Your React dev server
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
 
-app.use(cors());
+// Database connection
+const pool = new Pool({
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || "5432"),
+  database: process.env.DB_NAME || "waste_management",
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD || "postgresql",
+});
+
+// Test database connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error("❌ Database connection error:", err.message);
+  } else {
+    console.log("✅ Connected to PostgreSQL database");
+    release();
+  }
+});
 
 // Interface for sensor data
 interface SensorData {
@@ -208,132 +54,644 @@ interface SensorData {
 }
 
 // Telegram Bot Setup
-const TELEGRAM_TOKEN = "8082516160:AAEk4d_Q-BJLLrvb5I0xBNrRDPfAfuSzV3Q"; // from BotFather
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || "8082516160:AAEk4d_Q-BJLLrvb5I0xBNrRDPfAfuSzV3Q";
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
 
-// Pre-registered workers with their assignments
-const WORKERS = {
-  MEAZA: {
-    id: "MEAZA-001",
-    name: "Meaza Mulatu Tale",
-    chatId: "1167952257", // Meaza's Telegram ID
-    subcity: "Bole",
-    sensor: "A", // Responsible for Sensor A (Solid Waste)
-  },
-  KIDIST: {
-    id: "KIDIST-001",
-    name: "Kidist Alemayehu",
-    chatId: "649021695", // Kidist's Telegram ID
-    subcity: "Kirkos",
-    sensor: "B", // Responsible for Sensor B (Liquid Waste)
-  },
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || "your-jwt-secret-key-change-this-in-production";
+
+// Subcities data
+const SUBCITIES = [
+  { en: "Addis Ketema", am: "አዲስ ከተማ" },
+  { en: "Akaky Kaliti", am: "አካኪ ቃሊቲ" },
+  { en: "Arada", am: "አራዳ" },
+  { en: "Bole", am: "ቦሌ" },
+  { en: "Gullele", am: "ጉለሌ" },
+  { en: "Kirkos", am: "ቂርቆስ" },
+  { en: "Kolfe Keranio", am: "ቆልፌ ቀራንዮ" },
+  { en: "Lideta", am: "ልደታ" },
+  { en: "Nifas Silk-Lafto", am: "ንፋስ ስልክ ላፍቶ" },
+  { en: "Yeka", am: "የካ" },
+];
+
+// Middleware to verify JWT token
+const authenticateToken = (req: Request, res: Response, next: Function) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    (req as any).user = user;
+    next();
+  });
 };
-
-// Send test message to both workers on startup
-bot
-  .sendMessage(
-    WORKERS.MEAZA.chatId,
-    "✅ Server started! You are assigned to Bole area (Sensor A - Solid Waste)."
-  )
-  .then(() =>
-    console.log(`📤 Welcome message sent to Meaza (${WORKERS.MEAZA.chatId})`)
-  )
-  .catch((err) => console.error("Telegram error for Meaza:", err));
-
-bot
-  .sendMessage(
-    WORKERS.KIDIST.chatId,
-    "✅ Server started! You are assigned to Kirkos area (Sensor B - Liquid Waste)."
-  )
-  .then(() =>
-    console.log(`📤 Welcome message sent to Kidist (${WORKERS.KIDIST.chatId})`)
-  )
-  .catch((err) => console.error("Telegram error for Kidist:", err));
-
-// ========== ONLY ONE ALERT FUNCTION ==========
-function notifyBinFull(sensorId: string, distance: number, location: string) {
-  let worker;
-  let binType;
-
-  if (sensorId === "A") {
-    worker = WORKERS.MEAZA;
-    binType = "Solid Waste";
-  } else if (sensorId === "B") {
-    worker = WORKERS.KIDIST;
-    binType = "Solid Waste"; // Fixed: Changed from "Solid Waste" to "Liquid Waste"
-  } else {
-    console.error(`❌ Unknown sensor ID: ${sensorId}`);
-    return;
-  }
-
-  const message =
-    `🚨 *BIN FULL ALERT*\n\n` +
-    `👷 *Assigned To:* ${worker.name}\n` +
-    `📍 *Location:* ${location}\n` +
-    `🗺️ *Area:* ${worker.subcity}\n` +
-    `🚮 *Bin Type:* ${binType}\n` +
-    `📏 *Distance:* ${distance}cm\n` +
-    `🆔 *Sensor:* ${sensorId}\n\n` +
-    `⚠️ *Action Required:* Please clean the bin within 2 hours\n\n` +
-    `📌 *Google Maps:* https://maps.google.com/?q=${
-      getCoordinates(sensorId).lat
-    },${getCoordinates(sensorId).lng}\n\n` +
-    `✅ Reply: /done_${sensorId} when completed\n` +
-    `❌ Reply: /problem_${sensorId} if issue\n\n` +
-    `*AASTU Waste Management System*`;
-
-  bot
-    .sendMessage(worker.chatId, message, { parse_mode: "Markdown" })
-    .then(() => {
-      console.log(
-        `📤 Alert sent to ${worker.name} (${worker.subcity}) for Sensor ${sensorId}`
-      );
-    })
-    .catch((err) => {
-      console.error(`❌ Failed to send alert to ${worker.name}:`, err);
-    });
-}
-// =============================================
-
-// Get coordinates for each sensor location
-function getCoordinates(sensorId: string): { lat: number; lng: number } {
-  if (sensorId === "A") {
-    return { lat: 8.9958, lng: 38.7856 }; // Bole
-  } else {
-    return { lat: 8.9967, lng: 38.7969 }; // Kirkos
-  }
-}
-
-// Get location name for each sensor
-function getLocation(sensorId: string): string {
-  if (sensorId === "A") {
-    return "Bole Road, Near Airport (Solid Waste Bin)";
-  } else {
-    return "Megenagna, Main Junction (Liquid Waste Bin)";
-  }
-}
-
-// Get subcity for each sensor
-function getSubcity(sensorId: string): string {
-  if (sensorId === "A") {
-    return "Bole";
-  } else {
-    return "Kirkos";
-  }
-}
 
 // Track last alert time to avoid spam
 const lastAlertTime: { [key: string]: number } = {};
-const ALERT_COOLDOWN = 0.5 * 60 * 1000; // 5 minutes cooldown
+const ALERT_COOLDOWN = 5 * 60 * 1000; // 5 minutes cooldown
+
+
+
+// Create tables if they don't exist
+async function initializeDatabase() {
+  try {
+    // Create employees table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS employees (
+        id SERIAL PRIMARY KEY,
+        employee_id VARCHAR(50) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        telegram_chat_id VARCHAR(50) UNIQUE NOT NULL,
+        assigned_subcity VARCHAR(100) NOT NULL,
+        assigned_sensor VARCHAR(10) NOT NULL,
+        phone_number VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create bin_locations table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bin_locations (
+        id SERIAL PRIMARY KEY,
+        sensor_id VARCHAR(10) UNIQUE NOT NULL,
+        subcity VARCHAR(100) NOT NULL,
+        location_name VARCHAR(200) NOT NULL,
+        latitude DECIMAL(10, 8) NOT NULL,
+        longitude DECIMAL(11, 8) NOT NULL,
+        bin_type VARCHAR(50) NOT NULL,
+        address TEXT,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create cleaning_records table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS cleaning_records (
+        id SERIAL PRIMARY KEY,
+        sensor_id VARCHAR(10) NOT NULL,
+        employee_id INTEGER REFERENCES employees(id),
+        cleaned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        previous_status VARCHAR(50),
+        notes TEXT
+      )
+    `);
+
+    // Create admins table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        email VARCHAR(100),
+        full_name VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create sensor_data_history table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS sensor_data_history (
+        id SERIAL PRIMARY KEY,
+        sensor_id VARCHAR(10) NOT NULL,
+        distance DECIMAL(5, 2) NOT NULL,
+        is_full BOOLEAN NOT NULL,
+        recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log("✅ Database tables initialized");
+  } catch (error) {
+    console.error("❌ Database initialization error:", error);
+  }
+}
+
+// Call initialization of the database
+initializeDatabase();
+
+
+async function notifyBinFull(sensorId: string, distance: number) {
+  try {
+    // Get bin location details
+    const binResult = await pool.query(
+      `SELECT * FROM bin_locations WHERE sensor_id = $1`,
+      [sensorId]
+    );
+
+    if (binResult.rows.length === 0) {
+      console.error(`❌ No bin location found for sensor ${sensorId}`);
+      return;
+    }
+
+    const bin = binResult.rows[0];
+
+    // Get assigned employee
+    const employeeResult = await pool.query(
+      `SELECT * FROM employees WHERE assigned_sensor = $1`,
+      [sensorId]
+    );
+
+    if (employeeResult.rows.length === 0) {
+      console.error(`❌ No employee assigned to sensor ${sensorId}`);
+      return;
+    }
+
+    const employee = employeeResult.rows[0];
+
+    const message =
+      `🚨 *BIN FULL ALERT*\n\n` +
+      `👷 *Assigned To:* ${employee.name}\n` +
+      `📍 *Location:* ${bin.location_name}\n` +
+      `🗺️ *Area:* ${bin.subcity}\n` +
+      `🚮 *Bin Type:* ${bin.bin_type}\n` +
+      `📏 *Distance:* ${distance}cm\n` +
+      `🆔 *Sensor:* ${sensorId}\n\n` +
+      `⚠️ *Action Required:* Please clean the bin within 2 hours\n\n` +
+      `📌 *Google Maps:* https://maps.google.com/?q=${bin.latitude},${bin.longitude}\n\n` +
+      `✅ Reply: /done_${sensorId} when completed\n` +
+      `❌ Reply: /problem_${sensorId} if issue\n\n` +
+      `*AASTU Waste Management System*`;
+
+    bot
+      .sendMessage(employee.telegram_chat_id, message, { parse_mode: "Markdown" })
+      .then(() => {
+        console.log(
+          `📤 Alert sent to ${employee.name} (${employee.assigned_subcity}) for Sensor ${sensorId}`
+        );
+      })
+      .catch((err) => {
+        console.error(`❌ Failed to send alert to ${employee.name}:`, err);
+      });
+  } catch (error) {
+    console.error("❌ Error in notifyBinFull:", error);
+  }
+}
+
+// End point 
+// Admin Login
+app.post("/api/admin/login", async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password required" });
+    }
+
+    const result = await pool.query(
+      "SELECT * FROM admins WHERE username = $1",
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const admin = result.rows[0];
+    const isValid = await bcrypt.compare(password, admin.password_hash);
+
+    if (!isValid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username, role: "admin" },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({
+      success: true,
+      token,
+      admin: {
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        full_name: admin.full_name,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 2. Create admin (for initial setup)
+app.post("/api/admin/create", async (req: Request, res: Response) => {
+  try {
+    const { username, password, email, full_name } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      `INSERT INTO admins (username, password_hash, email, full_name) 
+       VALUES ($1, $2, $3, $4) RETURNING id, username, email, full_name`,
+      [username, hashedPassword, email, full_name]
+    );
+
+    res.json({
+      success: true,
+      message: "Admin created successfully",
+      admin: result.rows[0],
+    });
+  } catch (error: any) {
+    console.error("Create admin error:", error);
+    if (error.code === "23505") {
+      res.status(400).json({ error: "Username already exists" });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+});
+
+// 3. Add employee
+app.post("/api/employees", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const {
+      employee_id,
+      name,
+      telegram_chat_id,
+      assigned_subcity,
+      assigned_sensor,
+      phone_number,
+    } = req.body;
+
+    if (!employee_id || !name || !telegram_chat_id || !assigned_subcity || !assigned_sensor) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Check if sensor is already assigned
+    const existingSensor = await pool.query(
+      "SELECT * FROM employees WHERE assigned_sensor = $1",
+      [assigned_sensor]
+    );
+
+    if (existingSensor.rows.length > 0) {
+      return res.status(400).json({
+        error: `Sensor ${assigned_sensor} is already assigned to ${existingSensor.rows[0].name}`,
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO employees 
+       (employee_id, name, telegram_chat_id, assigned_subcity, assigned_sensor, phone_number) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
+       RETURNING *`,
+      [employee_id, name, telegram_chat_id, assigned_subcity, assigned_sensor, phone_number]
+    );
+
+    // Send welcome message to employee
+    bot.sendMessage(
+      telegram_chat_id,
+      `👋 Welcome to AASTU Waste Management System!\n\n` +
+      `📋 Your Assignment:\n` +
+      `• Name: ${name}\n` +
+      `• Employee ID: ${employee_id}\n` +
+      `• Area: ${assigned_subcity}\n` +
+      `• Sensor: ${assigned_sensor}\n\n` +
+      `You will receive alerts when your assigned bin needs cleaning.`
+    ).catch(err => console.error("Failed to send welcome message:", err));
+
+    res.json({
+      success: true,
+      message: "Employee added successfully",
+      employee: result.rows[0],
+    });
+  } catch (error: any) {
+    console.error("Add employee error:", error);
+    if (error.code === "23505") {
+      res.status(400).json({ error: "Employee ID or Telegram ID already exists" });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+});
+
+// 4. Get all employees
+app.get("/api/employees", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM employees ORDER BY created_at DESC"
+    );
+    res.json({ success: true, employees: result.rows });
+  } catch (error) {
+    console.error("Get employees error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 5. Update employee
+app.put("/api/employees/:id", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      telegram_chat_id,
+      assigned_subcity,
+      assigned_sensor,
+      phone_number,
+    } = req.body;
+
+    const result = await pool.query(
+      `UPDATE employees 
+       SET name = $1, telegram_chat_id = $2, assigned_subcity = $3, 
+           assigned_sensor = $4, phone_number = $5, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $6 
+       RETURNING *`,
+      [name, telegram_chat_id, assigned_subcity, assigned_sensor, phone_number, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Employee updated successfully",
+      employee: result.rows[0],
+    });
+  } catch (error: any) {
+    console.error("Update employee error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 6. Delete employee
+app.delete("/api/employees/:id", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM employees WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete employee error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 7. Add bin location
+app.post("/api/bin-locations", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const {
+      sensor_id,
+      subcity,
+      location_name,
+      latitude,
+      longitude,
+      bin_type,
+      address,
+    } = req.body;
+
+    if (!sensor_id || !subcity || !location_name || !latitude || !longitude || !bin_type) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO bin_locations 
+       (sensor_id, subcity, location_name, latitude, longitude, bin_type, address)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [sensor_id, subcity, location_name, latitude, longitude, bin_type, address]
+    );
+
+    res.json({
+      success: true,
+      message: "Bin location added successfully",
+      location: result.rows[0],
+    });
+  } catch (error: any) {
+    console.error("Add bin location error:", error);
+    if (error.code === "23505") {
+      res.status(400).json({ error: "Sensor ID already exists" });
+    } else {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+});
+
+// 8. Get all bin locations
+app.get("/api/bin-locations", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM bin_locations ORDER BY subcity, sensor_id"
+    );
+    res.json({ success: true, locations: result.rows });
+  } catch (error) {
+    console.error("Get bin locations error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 9. Update bin location
+app.put("/api/bin-locations/:id", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      sensor_id,
+      subcity,
+      location_name,
+      latitude,
+      longitude,
+      bin_type,
+      address,
+      is_active,
+    } = req.body;
+
+    const result = await pool.query(
+      `UPDATE bin_locations 
+       SET sensor_id = $1, subcity = $2, location_name = $3, latitude = $4, 
+           longitude = $5, bin_type = $6, address = $7, is_active = $8
+       WHERE id = $9
+       RETURNING *`,
+      [sensor_id, subcity, location_name, latitude, longitude, bin_type, address, is_active, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Bin location not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Bin location updated successfully",
+      location: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Update bin location error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
+// 10. Record cleaning
+app.post("/api/cleaning-records", async (req: Request, res: Response) => {
+  try {
+    const { sensor_id, employee_id, previous_status, notes } = req.body;
+
+    if (!sensor_id) {
+      return res.status(400).json({ error: "Sensor ID is required" });
+    }
+
+    // Validate sensor exists in bin_locations
+    const sensorCheck = await pool.query(
+      "SELECT id FROM bin_locations WHERE sensor_id = $1",
+      [sensor_id]
+    );
+
+    if (sensorCheck.rows.length === 0) {
+      return res.status(400).json({ 
+        error: `Sensor ${sensor_id} not found in bin locations` 
+      });
+    }
+
+    // Validate employee exists if provided
+    if (employee_id) {
+      const employeeCheck = await pool.query(
+        "SELECT id FROM employees WHERE id = $1",
+        [employee_id]
+      );
+
+      if (employeeCheck.rows.length === 0) {
+        return res.status(400).json({ 
+          error: `Employee with ID ${employee_id} not found` 
+        });
+      }
+    }
+
+    const result = await pool.query(
+      `INSERT INTO cleaning_records 
+       (sensor_id, employee_id, previous_status, notes)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [sensor_id, employee_id, previous_status, notes]
+    );
+
+    res.json({
+      success: true,
+      message: "Cleaning recorded successfully",
+      record: result.rows[0],
+    });
+  } catch (error: any) {
+    console.error("❌ Record cleaning error:", error.message, error.stack);
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error.message 
+    });
+  }
+});
+
+// 11. Get last cleaning time for all bins
+app.get("/api/cleaning-history", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        bl.sensor_id,
+        bl.location_name,
+        bl.subcity,
+        bl.bin_type,
+        cr.cleaned_at,
+        cr.previous_status,
+        cr.notes,
+        e.name as cleaned_by
+      FROM bin_locations bl
+      LEFT JOIN LATERAL (
+        SELECT * FROM cleaning_records 
+        WHERE sensor_id = bl.sensor_id 
+        ORDER BY cleaned_at DESC 
+        LIMIT 1
+      ) cr ON true
+      LEFT JOIN employees e ON cr.employee_id = e.id
+      ORDER BY bl.sensor_id
+    `);
+
+    res.json({ success: true, history: result.rows });
+  } catch (error) {
+    console.error("Get cleaning history error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 12. Get subcities list (with both English and Amharic)
+app.get("/api/subcities", async (req: Request, res: Response) => {
+  res.json({ success: true, subcities: SUBCITIES });
+});
+
+// 13. Get dashboard statistics
+app.get("/api/dashboard/stats", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    // Get total bins
+    const binsResult = await pool.query(
+      "SELECT COUNT(*) as total_bins, COUNT(CASE WHEN is_active THEN 1 END) as active_bins FROM bin_locations"
+    );
+
+    // Get total employees
+    const employeesResult = await pool.query("SELECT COUNT(*) as total_employees FROM employees");
+
+    // Get today's alerts (assuming full bins)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const alertsResult = await pool.query(
+      "SELECT COUNT(*) as today_alerts FROM sensor_data_history WHERE is_full = true AND recorded_at >= $1",
+      [today]
+    );
+
+    // Get pending cleanings (bins that were full in last 24 hours but not cleaned)
+    const pendingResult = await pool.query(`
+      SELECT COUNT(DISTINCT sensor_id) as pending_cleanings
+      FROM sensor_data_history sd
+      WHERE sd.is_full = true 
+        AND sd.recorded_at >= NOW() - INTERVAL '24 hours'
+        AND NOT EXISTS (
+          SELECT 1 FROM cleaning_records cr 
+          WHERE cr.sensor_id = sd.sensor_id 
+            AND cr.cleaned_at >= sd.recorded_at
+        )
+    `);
+
+    res.json({
+      success: true,
+      stats: {
+        totalBins: parseInt(binsResult.rows[0].total_bins),
+        activeBins: parseInt(binsResult.rows[0].active_bins),
+        totalEmployees: parseInt(employeesResult.rows[0].total_employees),
+        todayAlerts: parseInt(alertsResult.rows[0].today_alerts),
+        pendingCleanings: parseInt(pendingResult.rows[0].pending_cleanings || 0),
+      },
+    });
+  } catch (error) {
+    console.error("Get dashboard stats error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// SENSOR DATA PROCESSING 
 
 // Function to check if we should send an alert
 function shouldSendAlert(sensorId: string, distance: number): boolean {
   const now = Date.now();
   const lastTime = lastAlertTime[sensorId] || 0;
 
-  // Send alert if:
-  // 1. Distance is less than 20cm (bin is full)
-  // 2. AND cooldown period has passed
   if (distance < 20 && now - lastTime > ALERT_COOLDOWN) {
     lastAlertTime[sensorId] = now;
     return true;
@@ -342,26 +700,59 @@ function shouldSendAlert(sensorId: string, distance: number): boolean {
   return false;
 }
 
-// ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
-const FORCE_MOCK_MODE = true;
+// Function to process sensor data and save to history
+async function processSensorData(sensorData: SensorData) {
+  try {
+    // Save to history
+    await pool.query(
+      `INSERT INTO sensor_data_history (sensor_id, distance, is_full)
+       VALUES ($1, $2, $3)`,
+      [sensorData.sensorId, sensorData.distance, sensorData.isFull]
+    );
 
-// Serial port configuration (adjust for your system)
+    // Check if bin was full and is now empty (cleaned)
+    if (sensorData.distance > 40) { // Assuming > 40cm means bin is empty/safe
+      // Check if there was a recent full status
+      const recentFullResult = await pool.query(`
+        SELECT 1 FROM sensor_data_history 
+        WHERE sensor_id = $1 
+          AND is_full = true 
+          AND recorded_at >= NOW() - INTERVAL '30 minutes'
+        LIMIT 1
+      `, [sensorData.sensorId]);
+
+      if (recentFullResult.rows.length > 0) {
+        // Bin was recently full and is now empty - record automatic cleaning
+        await pool.query(
+          `INSERT INTO cleaning_records (sensor_id, previous_status, notes)
+           VALUES ($1, 'full', 'Automatically detected cleaning based on sensor data')`,
+          [sensorData.sensorId]
+        );
+        console.log(`✅ Auto-recorded cleaning for sensor ${sensorData.sensorId}`);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error processing sensor data:", error);
+  }
+}
+
+// ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
+const FORCE_MOCK_MODE = process.env.FORCE_MOCK_MODE === "true" || true;
+
+// Serial port configuration
 const PORT_NAME = FORCE_MOCK_MODE ? "MOCK" : process.env.SERIAL_PORT || "COM5";
 
 if (PORT_NAME === "MOCK") {
   console.log("🎭 Running in MOCK DATA mode (FORCE_MOCK_MODE = true)");
   console.log("To use real Arduino, change FORCE_MOCK_MODE to false");
-  console.log("\n👷 Worker Assignments:");
-  console.log(`  • Meaza (${WORKERS.MEAZA.chatId}) → Bole → Sensor A`);
-  console.log(`  • Kidist (${WORKERS.KIDIST.chatId}) → Kirkos → Sensor B`);
 
   // Demo mode: Send mock data every 3 seconds
-  setInterval(() => {
+  setInterval(async () => {
     const sensorId = Math.random() > 0.5 ? "A" : "B";
     const isCritical = Math.random() < 0.2; // 20% chance of critical
     const distance = isCritical
       ? Math.floor(Math.random() * 20) // Critical: 0-20cm
-      : Math.floor(Math.random() * 55); // Normal: 0-55cm
+      : Math.floor(Math.random() * 300); // Normal: 0-300cm
 
     const mockData: SensorData = {
       sensorId: sensorId,
@@ -374,14 +765,13 @@ if (PORT_NAME === "MOCK") {
     console.log(`🎭 Mock data: ${JSON.stringify(mockData)}`);
     io.emit("sensor-data", mockData);
 
+    // Process and save sensor data
+    await processSensorData(mockData);
+
     // Send alert if bin is full and cooldown passed
     if (shouldSendAlert(sensorId, distance)) {
-      console.log(
-        `🚨 CRITICAL: Sensor ${sensorId} (${distance}cm) - Sending to ${
-          sensorId === "A" ? "Meaza" : "Kidist"
-        }`
-      );
-      notifyBinFull(sensorId, distance, getLocation(sensorId));
+      console.log(`🚨 CRITICAL: Sensor ${sensorId} (${distance}cm)`);
+      await notifyBinFull(sensorId, distance);
     }
   }, 3000);
 } else {
@@ -394,10 +784,9 @@ if (PORT_NAME === "MOCK") {
 
     const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-    parser.on("data", (data: string) => {
+    parser.on("data", async (data: string) => {
       console.log(`📥 Raw data: ${data}`);
 
-      // Parse the data: Format is "A,distance,time" or "B,distance,time"
       const parts = data.trim().split(",");
 
       if (parts.length === 3) {
@@ -409,7 +798,7 @@ if (PORT_NAME === "MOCK") {
           sensorId: sensorId,
           distance: distance,
           timestamp: timestamp,
-          isFull: distance < 8,
+          isFull: distance < 20,
           receivedAt: Date.now(),
         };
 
@@ -418,14 +807,13 @@ if (PORT_NAME === "MOCK") {
         // Send to all connected React clients
         io.emit("sensor-data", sensorData);
 
+        // Process and save sensor data
+        await processSensorData(sensorData);
+
         // Send alert if bin is full and cooldown passed
         if (shouldSendAlert(sensorId, distance)) {
-          console.log(
-            `🚨 CRITICAL: Sensor ${sensorId} (${distance}cm) - Sending to ${
-              sensorId === "A" ? "Meaza" : "Kidist"
-            }`
-          );
-          notifyBinFull(sensorId, distance, getLocation(sensorId));
+          console.log(`🚨 CRITICAL: Sensor ${sensorId} (${distance}cm)`);
+          await notifyBinFull(sensorId, distance);
         }
       }
     });
@@ -442,12 +830,12 @@ if (PORT_NAME === "MOCK") {
     console.log("🔄 Switching to mock data mode...");
 
     // Fallback to mock data if serial fails
-    setInterval(() => {
+    setInterval(async () => {
       const sensorId = Math.random() > 0.5 ? "A" : "B";
       const isCritical = Math.random() < 0.2;
       const distance = isCritical
         ? Math.floor(Math.random() * 20)
-        : Math.floor(Math.random() * 55);
+        : Math.floor(Math.random() * 300);
 
       const mockData: SensorData = {
         sensorId: sensorId,
@@ -460,13 +848,12 @@ if (PORT_NAME === "MOCK") {
       console.log(`🎭 Fallback mock data: ${JSON.stringify(mockData)}`);
       io.emit("sensor-data", mockData);
 
+      // Process and save sensor data
+      await processSensorData(mockData);
+
       if (shouldSendAlert(sensorId, distance)) {
-        console.log(
-          `🚨 CRITICAL: Sensor ${sensorId} (${distance}cm) - Sending to ${
-            sensorId === "A" ? "Meaza" : "Kidist"
-          }`
-        );
-        notifyBinFull(sensorId, distance, getLocation(sensorId));
+        console.log(`🚨 CRITICAL: Sensor ${sensorId} (${distance}cm)`);
+        await notifyBinFull(sensorId, distance);
       }
     }, 3000);
   }
@@ -488,46 +875,29 @@ app.get("/health", (_req: Request, res: Response) => {
     message: "Sensor data server is running",
     mode: PORT_NAME === "MOCK" ? "mock" : "real",
     port: PORT_NAME === "MOCK" ? "none" : PORT_NAME,
-    workers: [
-      {
-        name: WORKERS.MEAZA.name,
-        assigned: WORKERS.MEAZA.subcity,
-        sensor: WORKERS.MEAZA.sensor,
-        status: "active",
-      },
-      {
-        name: WORKERS.KIDIST.name,
-        assigned: WORKERS.KIDIST.subcity,
-        sensor: WORKERS.KIDIST.sensor,
-        status: "active",
-      },
-    ],
+    database: "Connected",
+    version: "2.0.0",
   });
 });
 
-// Test alert endpoints
-app.get("/test-alert-meaza", (_req: Request, res: Response) => {
-  notifyBinFull("A", 15, getLocation("A"));
-  res.json({
-    success: true,
-    message: "Test alert sent to Meaza",
-    worker: WORKERS.MEAZA.name,
-    subcity: WORKERS.MEAZA.subcity,
-    sensor: "A",
-  });
-});
+// // Test alert endpoints
+// app.get("/test-alert-meaza", async (_req: Request, res: Response) => {
+//   await notifyBinFull("A", 15);
+//   res.json({
+//     success: true,
+//     message: "Test alert sent for Sensor A",
+//   });
+// });
 
-app.get("/test-alert-kidist", (_req: Request, res: Response) => {
-  notifyBinFull("B", 18, getLocation("B"));
-  res.json({
-    success: true,
-    message: "Test alert sent to Kidist",
-    worker: WORKERS.KIDIST.name,
-    subcity: WORKERS.KIDIST.subcity,
-    sensor: "B",
-  });
-});
+// app.get("/test-alert-kidist", async (_req: Request, res: Response) => {
+//   await notifyBinFull("B", 18);
+//   res.json({
+//     success: true,
+//     message: "Test alert sent for Sensor B",
+//   });
+// });
 
+// Root endpoint
 app.get("/", (_req: Request, res: Response) => {
   res.send(`
     <!DOCTYPE html>
@@ -538,15 +908,14 @@ app.get("/", (_req: Request, res: Response) => {
         body { font-family: Arial, sans-serif; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
         .status { background: #e8f5e8; padding: 15px; border-radius: 5px; }
-        .workers { margin-top: 20px; }
-        .worker-card { 
+        .api-list { margin-top: 20px; }
+        .api-card { 
           background: white; 
           padding: 15px; 
           margin: 10px 0; 
           border-left: 4px solid #4CAF50;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .endpoints { margin-top: 20px; }
         .endpoint { 
           background: #f0f0f0; 
           padding: 10px; 
@@ -557,44 +926,50 @@ app.get("/", (_req: Request, res: Response) => {
     </head>
     <body>
       <div class="container">
-        <h1>🚀 AASTU Waste Management Server</h1>
+        <h1>🚀 AASTU Waste Management Server v2.0</h1>
         
         <div class="status">
-          <p><strong>Status:</strong> Running</p>
-          <p><strong>Mode:</strong> ${
-            PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"
-          }</p>
+          <p><strong>Status:</strong> Running with Database</p>
+          <p><strong>Mode:</strong> ${PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"}</p>
+          <p><strong>Database:</strong> Connected</p>
           <p><strong>Telegram Alerts:</strong> Active</p>
         </div>
         
-        <div class="workers">
-          <h3>👷 Worker Assignments:</h3>
-          <div class="worker-card">
-            <h4>${WORKERS.MEAZA.name}</h4>
-            <p><strong>ID:</strong> ${WORKERS.MEAZA.id}</p>
-            <p><strong>Area:</strong> ${WORKERS.MEAZA.subcity}</p>
-            <p><strong>Sensor:</strong> ${
-              WORKERS.MEAZA.sensor
-            } (Solid Waste)</p>
-            <p><strong>Telegram ID:</strong> ${WORKERS.MEAZA.chatId}</p>
-          </div>
-          <div class="worker-card">
-            <h4>${WORKERS.KIDIST.name}</h4>
-            <p><strong>ID:</strong> ${WORKERS.KIDIST.id}</p>
-            <p><strong>Area:</strong> ${WORKERS.KIDIST.subcity}</p>
-            <p><strong>Sensor:</strong> ${
-              WORKERS.KIDIST.sensor
-            } (Liquid Waste)</p>
-            <p><strong>Telegram ID:</strong> ${WORKERS.KIDIST.chatId}</p>
-          </div>
-        </div>
-        
-        <div class="endpoints">
+        <div class="api-list">
           <h3>🔗 API Endpoints:</h3>
-          <div class="endpoint"><strong>GET /health</strong> - Server status</div>
-          <div class="endpoint"><strong>GET /test-alert-meaza</strong> - Send test alert to Meaza (Sensor A)</div>
-          <div class="endpoint"><strong>GET /test-alert-kidist</strong> - Send test alert to Kidist (Sensor B)</div>
-          <div class="endpoint"><strong>WebSocket</strong> - Real-time data at ws://localhost:${PORT}</div>
+          
+          <div class="api-card">
+            <h4>Authentication</h4>
+            <div class="endpoint"><strong>POST /api/admin/login</strong> - Admin login</div>
+            <div class="endpoint"><strong>POST /api/admin/create</strong> - Create admin (initial setup)</div>
+          </div>
+          
+          <div class="api-card">
+            <h4>Employees Management</h4>
+            <div class="endpoint"><strong>GET /api/employees</strong> - Get all employees</div>
+            <div class="endpoint"><strong>POST /api/employees</strong> - Add new employee</div>
+            <div class="endpoint"><strong>PUT /api/employees/:id</strong> - Update employee</div>
+            <div class="endpoint"><strong>DELETE /api/employees/:id</strong> - Delete employee</div>
+          </div>
+          
+          <div class="api-card">
+            <h4>Bin Locations</h4>
+            <div class="endpoint"><strong>GET /api/bin-locations</strong> - Get all bin locations</div>
+            <div class="endpoint"><strong>POST /api/bin-locations</strong> - Add new bin location</div>
+            <div class="endpoint"><strong>PUT /api/bin-locations/:id</strong> - Update bin location</div>
+          </div>
+          
+          <div class="api-card">
+            <h4>Cleaning Records</h4>
+            <div class="endpoint"><strong>POST /api/cleaning-records</strong> - Record cleaning</div>
+            <div class="endpoint"><strong>GET /api/cleaning-history</strong> - Get cleaning history</div>
+          </div>
+          
+          <div class="api-card">
+            <h4>Utilities</h4>
+            <div class="endpoint"><strong>GET /api/subcities</strong> - Get subcities list</div>
+            <div class="endpoint"><strong>GET /api/dashboard/stats</strong> - Get dashboard statistics</div>
+          </div>
         </div>
       </div>
     </body>
@@ -605,35 +980,17 @@ app.get("/", (_req: Request, res: Response) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-  console.log(
-    `📊 Mode: ${PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"}`
-  );
+  console.log(`📊 Mode: ${PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  console.log(`📱 Test Meaza alert: http://localhost:${PORT}/test-alert-meaza`);
-  console.log(
-    `📱 Test Kidist alert: http://localhost:${PORT}/test-alert-kidist`
-  );
-  console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
+  console.log(`🔑 Admin API: http://localhost:${PORT}/api/admin/login`);
 });
 
 // Handle graceful shutdown
-process.on("SIGINT", () => {
+process.on("SIGINT", async () => {
   console.log("\n🛑 Shutting down server...");
 
-  // Send shutdown notification to workers
-  bot
-    .sendMessage(
-      WORKERS.MEAZA.chatId,
-      "🛑 Server is shutting down. Alerts will resume when server restarts."
-    )
-    .catch((err) => console.error("Failed to notify Meaza:", err));
-
-  bot
-    .sendMessage(
-      WORKERS.KIDIST.chatId,
-      "🛑 Server is shutting down. Alerts will resume when server restarts."
-    )
-    .catch((err) => console.error("Failed to notify Kidist:", err));
+  // Close database connection
+  await pool.end();
 
   server.close(() => {
     console.log("✅ Server closed");
