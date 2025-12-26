@@ -1,162 +1,9 @@
-// import { MapPin, AlertCircle, CheckCircle } from 'lucide-react';
-// import { BinData } from '../data/mockData';
-
-// interface LocationMapProps {
-//   language: 'en' | 'am';
-//   bins: BinData[];
-// }
-
-// const translations = {
-//   en: {
-//     title: 'Monitoring Locations Map',
-//     fillLevel: 'Fill Level',
-//     lastCleaned: 'Last Cleaned',
-//     status: 'Status',
-//   },
-//   am: {
-//     title: 'የክትትል ቦታዎች ካርታ',
-//     fillLevel: 'የመሙላት ደረጃ',
-//     lastCleaned: 'መጨረሻ የተጸዳበት',
-//     status: 'ሁኔታ',
-//   }
-// };
-
-// export function LocationMap({ language, bins }: LocationMapProps) {
-//   const t = translations[language];
-
-//   // Calculate map bounds
-//   const lats = bins.map(b => b.coordinates.lat);
-//   const lngs = bins.map(b => b.coordinates.lng);
-//   const minLat = Math.min(...lats);
-//   const maxLat = Math.max(...lats);
-//   const minLng = Math.min(...lngs);
-//   const maxLng = Math.max(...lngs);
-
-//   const latRange = maxLat - minLat || 0.1;
-//   const lngRange = maxLng - minLng || 0.1;
-
-//   const getMarkerPosition = (lat: number, lng: number) => {
-//     const x = ((lng - minLng) / lngRange) * 90 + 5;
-//     const y = ((maxLat - lat) / latRange) * 90 + 5;
-//     return { x: `${x}%`, y: `${y}%` };
-//   };
-
-//   const getStatusColor = (status: string) => {
-//     switch (status) {
-//       case 'critical':
-//         return 'bg-red-600';
-//       case 'warning':
-//         return 'bg-yellow-500';
-//       default:
-//         return 'bg-green-600';
-//     }
-//   };
-
-//   return (
-//     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-visible">
-//       <h2 className="text-gray-900 mb-4">{t.title}</h2>
-      
-//       <div className="relative w-full h-[500px]">
-//         {/* Background map layer */}
-//         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 overflow-hidden">
-//           {/* Grid lines to simulate map */}
-//           <div className="absolute inset-0 opacity-20 pointer-events-none">
-//             {[...Array(10)].map((_, i) => (
-//               <div key={`h-${i}`} className="absolute w-full h-px bg-blue-300" style={{ top: `${i * 10}%` }} />
-//             ))}
-//             {[...Array(10)].map((_, i) => (
-//               <div key={`v-${i}`} className="absolute h-full w-px bg-blue-300" style={{ left: `${i * 10}%` }} />
-//             ))}
-//           </div>
-
-//           {/* Title overlay */}
-//           <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-lg shadow-md z-10">
-//             <p className="text-sm text-gray-600">Addis Ababa</p>
-//             <p className="text-xs text-gray-500">{language === 'am' ? 'አዲስ አበባ' : 'Capital City'}</p>
-//           </div>
-
-//           {/* Legend */}
-//           <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md p-3 z-10">
-//             <p className="text-xs text-gray-600 mb-2">{t.status}</p>
-//             <div className="space-y-1">
-//               <div className="flex items-center gap-2">
-//                 <div className="w-3 h-3 rounded-full bg-red-600"></div>
-//                 <span className="text-xs text-gray-700">{language === 'am' ? 'አስቸኳይ' : 'Critical'} (≥90%)</span>
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-//                 <span className="text-xs text-gray-700">{language === 'am' ? 'ማስጠንቀቂያ' : 'Warning'} (70-89%)</span>
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <div className="w-3 h-3 rounded-full bg-green-600"></div>
-//                 <span className="text-xs text-gray-700">{language === 'am' ? 'ደህንነቱ የተጠበቀ' : 'Safe'} {'(<70%)'}</span>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Markers layer - outside overflow-hidden */}
-//         {bins.map((bin) => {
-//           const pos = getMarkerPosition(bin.coordinates.lat, bin.coordinates.lng);
-//           const statusColor = getStatusColor(bin.status);
-          
-//           return (
-//             <div
-//               key={bin.id}
-//               className="absolute group cursor-pointer z-10 hover:z-[10000]"
-//               style={{ left: pos.x, top: pos.y, transform: 'translate(-50%, -50%)' }}
-//             >
-//               {/* Marker */}
-//               <div className={`${statusColor} w-4 h-4 rounded-full border-2 border-white shadow-lg group-hover:scale-150 transition-transform`}>
-//                 {bin.status === 'critical' && (
-//                   <div className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-75"></div>
-//                 )}
-//               </div>
-
-//               {/* Tooltip */}
-//               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-64 z-[9999] pointer-events-none">
-//                 <div className="bg-gray-900 text-white rounded-lg shadow-2xl p-3 text-xs border-2 border-white">
-//                   <div className="flex items-start justify-between gap-2 mb-2">
-//                     <p className="font-semibold">{bin.id}</p>
-//                     <span className={`${statusColor} px-2 py-0.5 rounded text-white text-xs`}>
-//                       {bin.fillLevel}%
-//                     </span>
-//                   </div>
-//                   <p className="text-gray-300 mb-1">
-//                     {language === 'am' ? bin.subcityAm : bin.subcity}
-//                   </p>
-//                   <p className="text-gray-400 text-xs">
-//                     {language === 'am' ? bin.locationAm : bin.location}
-//                   </p>
-//                   <div className="mt-2 pt-2 border-t border-gray-700">
-//                     <p className="text-gray-400 text-xs">
-//                       {t.lastCleaned}: {new Date(bin.lastCleaned).toLocaleString(language === 'am' ? 'am-ET' : 'en-US', { 
-//                         month: 'short', 
-//                         day: 'numeric', 
-//                         hour: '2-digit', 
-//                         minute: '2-digit' 
-//                       })}
-//                     </p>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// }
-
-
-import { MapPin, AlertCircle, CheckCircle } from 'lucide-react';
-import { BinData } from '../data/mockData';
+import { MapPin, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useSensorData } from '../contexts/SensorContext';
 import './components.css';
 
 interface LocationMapProps {
   language: 'en' | 'am';
-  bins: BinData[];
 }
 
 const translations = {
@@ -168,6 +15,10 @@ const translations = {
     viewOnGoogleMaps: 'View on Google Maps',
     arduinoSensor: 'Arduino Sensor',
     staticData: 'Static Data',
+    noData: 'No bin locations available',
+    loading: 'Loading bin locations...',
+    connectArduino: 'Connect Arduino to see real-time data',
+    arduinoOffline: 'Arduino Sensors Offline',
   },
   am: {
     title: 'የክትትል ቦታዎች ካርታ',
@@ -177,19 +28,82 @@ const translations = {
     viewOnGoogleMaps: 'በጉግል ካርታ ላይ ይመልከቱ',
     arduinoSensor: 'አርዱይኖ ሴንሰር',
     staticData: 'ማስተናገድ ውሂብ',
+    noData: 'ምንም የቆሻሻ መጣሪያ ቦታዎች የሉም',
+    loading: 'የቆሻሻ መጣሪያ ቦታዎች በመጫን ላይ...',
+    connectArduino: 'አርዱይኖ ያገናኙ ቀጥተኛ ዳታ ለማየት',
+    arduinoOffline: 'አርዱይኖ ሴንሰሮች ከመስመር ውጭ ናቸው',
   }
 };
 
-export function LocationMap({ language, bins }: LocationMapProps) {
-  const t = translations[language];
-  const { arduinoBins, isConnected } = useSensorData();
+// Define the bin type for display
+interface DisplayBin {
+  id: string;
+  subcity: string;
+  subcityAm: string;
+  location: string;
+  locationAm: string;
+  fillLevel: number;
+  lastCleaned: string;
+  status: "critical" | "warning" | "safe";
+  coordinates: { lat: number; lng: number };
+  sensor_id?: string;
+  isArduino?: boolean;
+}
 
-  // Combine static bins with real-time Arduino bins
-  const allBins = [...bins, ...arduinoBins];
+export function LocationMap({ language }: LocationMapProps) {
+  const t = translations[language];
+  const { arduinoBins, isConnected, isLoading } = useSensorData();
+
+  // Transform arduinoBins to display format
+  const displayBins: DisplayBin[] = arduinoBins.map(bin => ({
+    id: bin.sensor_id || String(bin.id),
+    subcity: bin.subcity,
+    subcityAm: bin.subcityAm || bin.subcity,
+    location: bin.location_name,
+    locationAm: bin.locationAm || bin.location_name,
+    fillLevel: bin.fillLevel,
+    lastCleaned: bin.lastCleaned,
+    status: bin.status,
+    coordinates: bin.coordinates,
+    sensor_id: bin.sensor_id,
+    isArduino: true,
+  }));
+
+  // If no bins available
+  if (isLoading) {
+    return (
+      <div className="location-map-container">
+        <h2 className="location-map-title">{t.title}</h2>
+        <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+            <p className="text-gray-500">{t.loading}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (displayBins.length === 0) {
+    return (
+      <div className="location-map-container">
+        <h2 className="location-map-title">{t.title}</h2>
+        <div className="flex flex-col items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200 p-6">
+          <MapPin className="w-12 h-12 text-gray-300 mb-3" />
+          <p className="text-gray-500 mb-2">{t.noData}</p>
+          <p className="text-sm text-gray-400">
+            {language === 'am' 
+              ? 'የቆሻሻ መጣሪያ ቦታዎችን ያክሉ ወይም አርዱይኖ ያገናኙ'
+              : 'Add bin locations or connect Arduino sensors'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate map bounds
-  const lats = allBins.map(b => b.coordinates.lat);
-  const lngs = allBins.map(b => b.coordinates.lng);
+  const lats = displayBins.map(b => b.coordinates.lat);
+  const lngs = displayBins.map(b => b.coordinates.lng);
   const minLat = Math.min(...lats);
   const maxLat = Math.max(...lats);
   const minLng = Math.min(...lngs);
@@ -199,8 +113,8 @@ export function LocationMap({ language, bins }: LocationMapProps) {
   const lngRange = maxLng - minLng || 0.1;
 
   const getMarkerPosition = (lat: number, lng: number) => {
-    const x = ((lng - minLng) / lngRange) * 90 + 5;
-    const y = ((maxLat - lat) / latRange) * 90 + 5;
+    const x = ((lng - minLng) / lngRange) * 50 + 5;
+    const y = ((maxLat - lat) / latRange) * 50 + 5;
     return { x: `${x}%`, y: `${y}%` };
   };
 
@@ -230,8 +144,8 @@ export function LocationMap({ language, bins }: LocationMapProps) {
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
   };
 
-  const isArduinoBin = (binId: string) => {
-    return binId.includes('ARDUINO') || binId.includes('BIN-ARDUINO');
+  const isArduinoBin = (bin: DisplayBin) => {
+    return bin.isArduino || !!bin.sensor_id;
   };
 
   return (
@@ -243,7 +157,7 @@ export function LocationMap({ language, bins }: LocationMapProps) {
           <span className="connection-dot"></span>
           {isConnected 
             ? (language === 'en' ? 'Connected to Arduino Sensors' : 'ከአርዱይኖ ሴንሰሮች ጋር ተገናኝቷል')
-            : (language === 'en' ? 'Arduino Sensors Offline' : 'አርዱይኖ ሴንሰሮች ከመስመር ውጭ ናቸው')
+            : t.arduinoOffline
           }
         </div>
       </div>
@@ -283,19 +197,23 @@ export function LocationMap({ language, bins }: LocationMapProps) {
                 <div className="legend-dot status-safe"></div>
                 <span className="legend-text">{language === 'am' ? 'ደህንነቱ የተጠበቀ' : 'Safe'} (&lt;70%)</span>
               </div>
+              <div className="legend-item">
+                <div className="legend-dot arduino-marker"></div>
+                <span className="legend-text">{t.arduinoSensor}</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Markers layer */}
-        {allBins.map((bin) => {
+        {displayBins.map((bin) => {
           const pos = getMarkerPosition(bin.coordinates.lat, bin.coordinates.lng);
           const statusColor = getStatusColor(bin.status);
-          const isArduino = isArduinoBin(bin.id);
+          const isArduino = isArduinoBin(bin);
           
           return (
             <div
-              key={bin.id}
+              key={`${bin.id}-${bin.coordinates.lat}-${bin.coordinates.lng}`}
               className="map-marker-container group"
               style={{ left: pos.x, top: pos.y }}
               onClick={() => handleViewOnGoogleMaps(bin.coordinates.lat, bin.coordinates.lng)}
@@ -307,7 +225,7 @@ export function LocationMap({ language, bins }: LocationMapProps) {
                 )}
                 {isArduino && (
                   <div className="arduino-indicator">
-                    <span className="arduino-text">A</span>
+                    <span className="arduino-text">{bin.id}</span>
                   </div>
                 )}
               </div>
@@ -338,7 +256,7 @@ export function LocationMap({ language, bins }: LocationMapProps) {
                   </p>
                   <div className="tooltip-details">
                     <p className="tooltip-info">
-                      <ClockIcon />
+                      <Clock className="w-3 h-3 mr-1 inline" />
                       {t.lastCleaned}: {new Date(bin.lastCleaned).toLocaleString(language === 'am' ? 'am-ET' : 'en-US', { 
                         month: 'short', 
                         day: 'numeric', 
@@ -376,14 +294,21 @@ export function LocationMap({ language, bins }: LocationMapProps) {
           );
         })}
       </div>
+
+      {/* Bin count summary */}
+      <div className="mt-4 text-sm text-gray-600">
+        <p>
+          {language === 'am' 
+            ? `አጠቃላይ ${displayBins.length} የቆሻሻ መጣሪያ ቦታዎች`
+            : `Total ${displayBins.length} bin locations`
+          }
+          {' • '}
+          {language === 'am'
+            ? `${displayBins.filter(b => b.isArduino).length} አርዱይኖ ተገናኝተዋል`
+            : `${displayBins.filter(b => b.isArduino).length} Arduino sensors connected`
+          }
+        </p>
+      </div>
     </div>
   );
 }
-
-// Clock icon component
-const ClockIcon = () => (
-  <svg className="clock-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10"></circle>
-    <polyline points="12 6 12 12 16 14"></polyline>
-  </svg>
-);

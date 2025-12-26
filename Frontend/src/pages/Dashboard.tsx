@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Users, Trash2, AlertTriangle, CheckCircle, BarChart3, Clock } from 'lucide-react';
-import { StatusSummary } from '../components/StatusSummary';
 import { LocationMap } from '../components/LocationMap';
 import { AlertsList } from '../components/AlertsList';
 import { SensorDisplay } from '../components/SensorDisplay';
 import { useSensorData } from '../contexts/SensorContext';
 import { getDashboardStats, getBinLocations } from '../services/api';
-import { mockBinData } from '../data/mockData';
+ import { mockBinData } from '../data/mockData';
 
 interface DashboardProps {
   language: 'en' | 'am';
@@ -199,13 +198,14 @@ export function Dashboard({ language }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 m-t-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.mapView}</h2>
-          <LocationMap language={language} bins={combinedBins} />
+          <LocationMap language={language}  />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.recentAlerts}</h2>
-          <AlertsList language={language} bins={combinedBins} />
+          <AlertsList language={language} />
         </div>
       </div>
     </div>
   );
 }
+

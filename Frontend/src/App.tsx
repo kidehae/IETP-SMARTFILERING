@@ -149,13 +149,14 @@ import { Employees } from './pages/Employees';
 import { BinLocations}   from './pages/BinLocations';
 import { CleaningHistory } from './pages/CleaningHistory';
 import { Reports } from './pages/Reports';
-import { Settings } from './pages/Settings';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SensorProvider } from './contexts/SensorContext';
 
 function ProtectedLayout() {
-  const [language, setLanguage] = useState<'am' | 'en'>('am');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // const [language, setLanguage] = useState<'am' | 'en'>('am');
+  const [language, setLanguage] = useState<'am' | 'en'>('en');
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {

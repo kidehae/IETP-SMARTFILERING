@@ -11,6 +11,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
+
+let mockInterval: NodeJS.Timeout | null = null;
+let fallbackInterval: NodeJS.Timeout | null = null;
+
+
 dotenv.config();
 
 const app = express();
@@ -737,7 +742,9 @@ async function processSensorData(sensorData: SensorData) {
 }
 
 // ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
-const FORCE_MOCK_MODE = process.env.FORCE_MOCK_MODE === "true" || true;
+// const FORCE_MOCK_MODE = process.env.FORCE_MOCK_MODE === "false" || false;
+// This handles various truthy/falsy values
+const FORCE_MOCK_MODE = (process.env.FORCE_MOCK_MODE || "true").toLowerCase() === "false";
 
 // Serial port configuration
 const PORT_NAME = FORCE_MOCK_MODE ? "MOCK" : process.env.SERIAL_PORT || "COM5";
@@ -747,12 +754,12 @@ if (PORT_NAME === "MOCK") {
   console.log("To use real Arduino, change FORCE_MOCK_MODE to false");
 
   // Demo mode: Send mock data every 3 seconds
-  setInterval(async () => {
+  mockInterval = setInterval(async () => {
     const sensorId = Math.random() > 0.5 ? "A" : "B";
     const isCritical = Math.random() < 0.2; // 20% chance of critical
     const distance = isCritical
       ? Math.floor(Math.random() * 20) // Critical: 0-20cm
-      : Math.floor(Math.random() * 300); // Normal: 0-300cm
+      : Math.floor(Math.random() * 55); // Normal: 0-300cm
 
     const mockData: SensorData = {
       sensorId: sensorId,
@@ -830,7 +837,7 @@ if (PORT_NAME === "MOCK") {
     console.log("🔄 Switching to mock data mode...");
 
     // Fallback to mock data if serial fails
-    setInterval(async () => {
+    fallbackInterval = setInterval(async () => {
       const sensorId = Math.random() > 0.5 ? "A" : "B";
       const isCritical = Math.random() < 0.2;
       const distance = isCritical
@@ -880,102 +887,8 @@ app.get("/health", (_req: Request, res: Response) => {
   });
 });
 
-// // Test alert endpoints
-// app.get("/test-alert-meaza", async (_req: Request, res: Response) => {
-//   await notifyBinFull("A", 15);
-//   res.json({
-//     success: true,
-//     message: "Test alert sent for Sensor A",
-//   });
-// });
-
-// app.get("/test-alert-kidist", async (_req: Request, res: Response) => {
-//   await notifyBinFull("B", 18);
-//   res.json({
-//     success: true,
-//     message: "Test alert sent for Sensor B",
-//   });
-// });
-
 // Root endpoint
-app.get("/", (_req: Request, res: Response) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Waste Management Server</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .status { background: #e8f5e8; padding: 15px; border-radius: 5px; }
-        .api-list { margin-top: 20px; }
-        .api-card { 
-          background: white; 
-          padding: 15px; 
-          margin: 10px 0; 
-          border-left: 4px solid #4CAF50;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .endpoint { 
-          background: #f0f0f0; 
-          padding: 10px; 
-          margin: 5px 0; 
-          border-left: 4px solid #2196F3;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>🚀 AASTU Waste Management Server v2.0</h1>
-        
-        <div class="status">
-          <p><strong>Status:</strong> Running with Database</p>
-          <p><strong>Mode:</strong> ${PORT_NAME === "MOCK" ? "MOCK DATA" : "REAL ARDUINO"}</p>
-          <p><strong>Database:</strong> Connected</p>
-          <p><strong>Telegram Alerts:</strong> Active</p>
-        </div>
-        
-        <div class="api-list">
-          <h3>🔗 API Endpoints:</h3>
-          
-          <div class="api-card">
-            <h4>Authentication</h4>
-            <div class="endpoint"><strong>POST /api/admin/login</strong> - Admin login</div>
-            <div class="endpoint"><strong>POST /api/admin/create</strong> - Create admin (initial setup)</div>
-          </div>
-          
-          <div class="api-card">
-            <h4>Employees Management</h4>
-            <div class="endpoint"><strong>GET /api/employees</strong> - Get all employees</div>
-            <div class="endpoint"><strong>POST /api/employees</strong> - Add new employee</div>
-            <div class="endpoint"><strong>PUT /api/employees/:id</strong> - Update employee</div>
-            <div class="endpoint"><strong>DELETE /api/employees/:id</strong> - Delete employee</div>
-          </div>
-          
-          <div class="api-card">
-            <h4>Bin Locations</h4>
-            <div class="endpoint"><strong>GET /api/bin-locations</strong> - Get all bin locations</div>
-            <div class="endpoint"><strong>POST /api/bin-locations</strong> - Add new bin location</div>
-            <div class="endpoint"><strong>PUT /api/bin-locations/:id</strong> - Update bin location</div>
-          </div>
-          
-          <div class="api-card">
-            <h4>Cleaning Records</h4>
-            <div class="endpoint"><strong>POST /api/cleaning-records</strong> - Record cleaning</div>
-            <div class="endpoint"><strong>GET /api/cleaning-history</strong> - Get cleaning history</div>
-          </div>
-          
-          <div class="api-card">
-            <h4>Utilities</h4>
-            <div class="endpoint"><strong>GET /api/subcities</strong> - Get subcities list</div>
-            <div class="endpoint"><strong>GET /api/dashboard/stats</strong> - Get dashboard statistics</div>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
-});
+
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
@@ -986,14 +899,45 @@ server.listen(PORT, () => {
 });
 
 // Handle graceful shutdown
+// process.on("SIGINT", async () => {
+//   console.log("\n🛑 Shutting down server...");
+
+//   // Close database connection
+//   await pool.end();
+
+//   server.close(() => {
+//     console.log("✅ Server closed");
+//     process.exit(0);
+//   });
+// });
+
+
+
 process.on("SIGINT", async () => {
-  console.log("\n🛑 Shutting down server...");
+  console.log("\n🛑 Shutting down server gracefully...");
 
-  // Close database connection
-  await pool.end();
+  // 🛑 Stop mock intervals FIRST
+  if (mockInterval) {
+    clearInterval(mockInterval);
+    console.log("🧹 Mock interval cleared");
+  }
 
-  server.close(() => {
-    console.log("✅ Server closed");
+  if (fallbackInterval) {
+    clearInterval(fallbackInterval);
+    console.log("🧹 Fallback interval cleared");
+  }
+
+  // 🛑 Close socket.io
+  io.close();
+
+  // 🛑 Close HTTP server
+  server.close(async () => {
+    console.log("✅ HTTP server closed");
+
+    // 🛑 Close DB LAST
+    await pool.end();
+    console.log("✅ Database pool closed");
+
     process.exit(0);
   });
 });
