@@ -114,7 +114,7 @@ export function LocationMap({ language }: LocationMapProps) {
 
   const getMarkerPosition = (lat: number, lng: number) => {
     const x = ((lng - minLng) / lngRange) * 50 + 5;
-    const y = ((maxLat - lat) / latRange) * 50 + 5;
+    const y = ((maxLat - lat) / latRange) * 40 + 5;
     return { x: `${x}%`, y: `${y}%` };
   };
 
