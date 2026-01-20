@@ -181,6 +181,13 @@ async function initializeDatabase() {
 // Call initialization of the database
 initializeDatabase();
 
+const distanceToFillLevel = (distance: number): number => {
+  const minDistance = 0;    // Bin completely full
+  const maxDistance = 55;   // Bin considered empty
+  let fillLevel = ((maxDistance - distance) / maxDistance) * 100;
+  fillLevel = Math.max(0, Math.min(100, fillLevel)); // Clamp between 0 and 100
+  return Math.round(fillLevel); // Round to whole number
+};
 
 async function notifyBinFull(sensorId: string, distance: number) {
   try {
@@ -208,22 +215,38 @@ async function notifyBinFull(sensorId: string, distance: number) {
       return;
     }
 
+    // const employee = employeeResult.rows[0];
+
+    // const message =
+    //   `🚨 *BIN FULL ALERT*\n\n` +
+    //   `👷 *Assigned To:* ${employee.name}\n` +
+    //   `📍 *Location:* ${bin.location_name}\n` +
+    //   `🗺️ *Area:* ${bin.subcity}\n` +
+    //   `🚮 *Bin Type:* ${bin.bin_type}\n` +
+    //   `📏 *Distance:* ${distance}cm\n` +
+    //   `🆔 *Sensor:* ${sensorId}\n\n` +
+    //   `⚠️ *Action Required:* Please clean the bin within 2 hours\n\n` +
+    //   `📌 *Google Maps:* https://maps.google.com/?q=${bin.latitude},${bin.longitude}\n\n` +
+    //   `✅ Reply: /done_${sensorId} when completed\n` +
+    //   `❌ Reply: /problem_${sensorId} if issue\n\n` +
+    //   `*AASTU Waste Management System*`;
+    const fillPercent = distanceToFillLevel(distance);
+
     const employee = employeeResult.rows[0];
 
     const message =
       `🚨 *BIN FULL ALERT*\n\n` +
-      `👷 *Assigned To:* ${employee.name}\n` +
+      `👷  ${employee.name} * you are Assigned To:*\n` +
       `📍 *Location:* ${bin.location_name}\n` +
-      `🗺️ *Area:* ${bin.subcity}\n` +
+      `🗺 *Area:* ${bin.subcity}\n` +
       `🚮 *Bin Type:* ${bin.bin_type}\n` +
-      `📏 *Distance:* ${distance}cm\n` +
-      `🆔 *Sensor:* ${sensorId}\n\n` +
+      `📏 *Fill Level:* ${fillPercent}%\n` + 
+      //`🆔 *Sensor:* ${sensorId}\n\n` +
       `⚠️ *Action Required:* Please clean the bin within 2 hours\n\n` +
       `📌 *Google Maps:* https://maps.google.com/?q=${bin.latitude},${bin.longitude}\n\n` +
-      `✅ Reply: /done_${sensorId} when completed\n` +
-      `❌ Reply: /problem_${sensorId} if issue\n\n` +
-      `*AASTU Waste Management System*`;
-
+      //`✅ Reply: /done_${sensorId} when completed\n` +
+      //`❌ Reply: /problem_${sensorId} if issue\n\n` +
+      `*Addis Ababa Waste Management System*`;
     bot
       .sendMessage(employee.telegram_chat_id, message, { parse_mode: "Markdown" })
       .then(() => {
@@ -744,7 +767,7 @@ async function processSensorData(sensorData: SensorData) {
 // ⚠️ CHANGE THIS LINE - Set to false when Arduino is connected ⚠️
 // const FORCE_MOCK_MODE = process.env.FORCE_MOCK_MODE === "false" || false;
 // This handles various truthy/falsy values
-const FORCE_MOCK_MODE = (process.env.FORCE_MOCK_MODE || "true").toLowerCase() === "false";
+const FORCE_MOCK_MODE = (process.env.FORCE_MOCK_MODE || "True ").toLowerCase() === "false";
 
 // Serial port configuration
 const PORT_NAME = FORCE_MOCK_MODE ? "MOCK" : process.env.SERIAL_PORT || "COM5";
@@ -769,7 +792,7 @@ if (PORT_NAME === "MOCK") {
       receivedAt: Date.now(),
     };
 
-    console.log(`🎭 Mock data: ${JSON.stringify(mockData)}`);
+    console.log(`: ${JSON.stringify(mockData)}`);
     io.emit("sensor-data", mockData);
 
     // Process and save sensor data
